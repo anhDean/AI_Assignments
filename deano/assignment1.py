@@ -16,9 +16,9 @@ def generate_random_problem(n_vars, n_clauses):
         while len(tmp_var) + len(tmp_nVar) != 3:
 
             if(random.randint(0,1)):
-                tmp_nVar.add(random.randint(1,n_vars))
+                tmp_nVar.add(random.randint(0,n_vars-1))
             else:
-                tmp_var.add(random.randint(1,n_vars))
+                tmp_var.add(random.randint(0,n_vars-1))
         problem.append((tmp_var, tmp_nVar))
 
     return problem
@@ -84,66 +84,71 @@ def eval_three_cnf(problem, state):
 def am_i_done(problem, state):
     return eval_three_cnf(problem,state)
 
-
-
+import random
 
 def run_gsat_chain(problem, state, max_iter):
     
     final_state = state
     max_clause = 0
+    last_max_clause = 0
     success = False
 
-
     for _ in xrange(max_iter):
-
-
-        flip_list = []
-        flip_count = []
 
         if am_i_done(problem, final_state):
             return final_state, True
 
+        tmp = final_state
+        improved = False
+        
+        improve_list = []
+        
         for idx, _ in enumerate(final_state):
 
-            tmp = final_state
-            tmp[idx] = not final_state[idx] # flip state in state list
+            tmp[idx] = not tmp[idx] # flip state in state list
             count = 0
 
             for clause in problem:     
-             # evaluate over all clauses
+            # evaluate over all clauses
                 if(eval_clause(tmp, clause)):
                     count += 1
 
-            if(count >= max_clause):
-               final_state[idx] = not final_state[idx]
-               max_clause = count
-
-
+            if(count >= last_max_clause):
+                improve_list.append(idx)
+                max_clause  = count
+                
+            tmp[idx] = not tmp[idx] # revert operation
+            
+        if len(improve_list) == 0:
+            break
+            
+        improve_idx = random.randint(0,len(improve_list)-1)
+        final_state[improve_idx]  = not final_state[improve_idx]
+        last_max_clause = max_clause
+            
     return final_state, success
 
-
-
+	
+	
 def run_gsat(problem, max_iter, n_vars, max_n_chains):
-
     max_count = 0
-    best_state = []
     success = False
-
-
+    
     for _ in range(max_n_chains):
         state = get_initial_state(n_vars, 0)
-        satisfying_assignment , success = run_gsat_chain(problem, state, max_iter)
+        tmp_assignment, success = run_gsat_chain(problem, state, max_iter)
 
         if success:
-            return success, satisfying_assignment
+            return success, tmp_assignment
         else:
             # count max clauses
             count = 0
             for clause in problem:
-                if eval_clause(satisfying_assignment, clause):
+                if eval_clause(tmp_assignment, clause):
                     count +=1
 
             if count > max_count:
                 max_count = count
+                satisfying_assignment = tmp_assignment
 
     return success, satisfying_assignment
