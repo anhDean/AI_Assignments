@@ -3,23 +3,6 @@ from random import randint
 
 print(sys.version) # make sure you are on 2.7
 
-def generate_random_problem_jojo(n_vars, n_clauses):
-    problem = []
-
-    for i in range(n_clauses):
-        posClause = set()
-        negClause = set()
-        while len(posClause) + len(negClause) != 3:
-            vars = randint(0,n_vars-1)
-
-            if randint(0, 1):
-                posClause.add(vars)
-            else:
-                negClause.add(vars)
-
-        problem.append((posClause, negClause))
-    return problem
-
 def generate_random_problem(n_vars, n_clauses):
     problem = []
     for clause in range(n_clauses):
@@ -120,7 +103,7 @@ def run_gsat_chain(problem, state, max_iter):
 
 def run_gsat(problem, max_iter, n_vars, max_n_chains):
 
-    global badSolution
+    global satisfying_assignment
     maxTrue = 0
     success = False
 
@@ -132,10 +115,10 @@ def run_gsat(problem, max_iter, n_vars, max_n_chains):
         if success:
             return success, tmp_assignment
         else:
-            count = len([eval_clause(present_solution, clause) for clause in problem if eval_clause(present_solution, clause)])
+            count = len([eval_clause(tmp_assignment, clause) for clause in problem if eval_clause(tmp_assignment, clause)])
             if count > maxTrue:
                 maxTrue = count
-                satisfying_assignment = present_solution
+                satisfying_assignment = tmp_assignment
 
     return success, satisfying_assignment
 
