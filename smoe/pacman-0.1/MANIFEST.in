@@ -1,0 +1,3 @@
+recursive-include pac/layouts *
+recursive-include pac/test_cases *
+include notebooks/GameReduced.js
