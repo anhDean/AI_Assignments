@@ -16,24 +16,6 @@ from pac import graphicsDisplay
 
 rules = pacman.ClassicGameRules(0)
 
-def tinyMazeSearch(problem):
-    """
-    Returns a sequence of moves that solves tinyMaze.  For any other
-    maze, the sequence of moves will be incorrect, so only use this for tinyMaze
-    """
-
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())  # delete this later, otherwise the start state
-                                                                                 # will count as expanded twice!
-    print 'problem', problem
-
-
-    from pac.game import Directions
-    s = Directions.SOUTH
-    w = Directions.WEST
-    return  [e, e, w, s, w, w, s, w]
-
 def depthFirstSearch(problem):
 
     Q = Stack()
@@ -62,6 +44,9 @@ def depthFirstSearch(problem):
                 discovered.append(u[0])
                 parents[u[0]] = current_state
                 actions[(current_state, u[0])] = u[1]
+            if u[0] in discovered and u[0] not in visited:          #parent update
+                parents[u[0]] = current_state
+                actions[(current_state, u[0])] = u[1]
 
     parent = goal_state
     while parent is not init_state:
@@ -72,7 +57,6 @@ def depthFirstSearch(problem):
 
     path.reverse()
     return path
-
 
 def breadthFirstSearch(problem):
 
@@ -121,7 +105,7 @@ def start_game():
     mr_pacman = SearchAgent(fn=breadthFirstSearch, prob=PositionSearchProblem)
     ghosts = [RandomGhost(1), RandomGhost(2)]  # controls the behavior of two ghosts
     gameDisplay = graphicsDisplay.PacmanGraphics(frameTime = 0.1) # initialize the display of the playing field
-    lay = layout.getLayout('C:\Users\Bernhard\AppData\Local\Programs\Python\Python27\Lib\site-packages\pacman-0.1-py2.7.egg\pac\layouts\mediumMaze')  # load the layout of the map
+    lay = layout.getLayout('C:\Users\Bernhard\AppData\Local\Programs\Python\Python27\Lib\site-packages\pacman-0.1-py2.7.egg\pac\layouts\\tinyMaze')  # load the layout of the map
 
     game = rules.newGame(lay, mr_pacman, ghosts, gameDisplay, False, False)  # instantiate a Game instance, see below
     game.run()  # run the game, until Pacman is caught by a ghost or there is no food left
