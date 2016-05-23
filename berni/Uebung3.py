@@ -149,11 +149,79 @@ def uniformCostSearch(problem):
     path.reverse()
     return path
 
+def nullHeuristic(state, problem=None):
+
+    return 0
+
+def aStarSearch(problem, heuristic=nullHeuristic):
+
+    Q = PriorityQueue()
+    visited = []
+    discovered = []
+    goal_state = []
+    path = []
+    parents = {}
+    actions = {}
+    h_costs = {}
+    g_costs = {}
+    costs = {}
+    init_state = problem.getStartState()
+    h_costs[init_state] = heuristic(init_state, problem)
+    g_costs[init_state] = 0
+    costs[init_state] = 0
+    Q.push(init_state, 0)
+    discovered.append(init_state)
+
+    if problem.isGoalState(init_state):
+        return []
+
+    while not Q.isEmpty():
+        current_state = Q.pop()
+        if current_state not in visited:
+            visited.append(current_state)
+            discovered.remove(current_state)
+
+            if problem.isGoalState(current_state):
+                goal_state = current_state
+                break
+
+            successors = problem.getSuccessors(current_state)
+
+            for u in successors:
+                if u[0] not in visited:
+                    if u[0] not in discovered:
+                        discovered.append(u[0])
+                        h_costs[u[0]] = heuristic(u[0],problem)
+                        g_costs[u[0]] = g_costs[current_state] + u[2]
+                        costs[u[0]] = g_costs[u[0]] + h_costs[u[0]]
+                        Q.push(u[0], costs[u[0]])
+                        parents[u[0]] = current_state
+                        actions[(current_state,u[0])] = u[1]
+                    elif u[0] in discovered and heuristic(u[0],problem) + g_costs[current_state] + u[2] < costs[u[0]]:
+                        h_costs[u[0]] = heuristic(u[0],problem)
+                        g_costs[u[0]] = g_costs[current_state]+u[2]
+                        costs[u[0]] = h_costs[u[0]] + g_costs[u[0]]
+                        parents[u[0]] = current_state
+                        actions[(current_state,u[0])] = u[1]
+                        Q.push(u[0], costs[u[0]])
+
+    parent = goal_state
+    while parent is not init_state:
+        child = parent
+        parent = parents[child]
+        action = actions[(parent, child)]
+        path.append(action)
+
+    path.reverse()
+    return path
+
+
+
 
 
 def start_game():
 
-    mr_pacman = SearchAgent(fn=uniformCostSearch, prob=PositionSearchProblem)
+    mr_pacman = SearchAgent(fn=aStarSearch, prob=PositionSearchProblem)
     ghosts = [RandomGhost(1), RandomGhost(2)]  # controls the behavior of two ghosts
     gameDisplay = graphicsDisplay.PacmanGraphics(frameTime = 0.1) # initialize the display of the playing field
     lay = layout.getLayout('C:\Users\Bernhard\AppData\Local\Programs\Python\Python27\Lib\site-packages\pacman-0.1-py2.7.egg\pac\layouts\\tinyMaze')  # load the layout of the map
