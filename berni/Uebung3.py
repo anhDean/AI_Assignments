@@ -215,7 +215,86 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     path.reverse()
     return path
 
+class CornersProblem(search.SearchProblem):
+    """
+    This search problem finds paths through all four corners of a layout.
 
+    You must select a suitable state space and successor function.
+    """
+
+    def __init__(self, startingGameState):
+        """
+        Stores the walls, pacman's starting position and corners.
+        """
+        self.walls = startingGameState.getWalls()
+        self.startingPosition = startingGameState.getPacmanPosition()
+        top, right = self.walls.height-2, self.walls.width-2
+        self.corners = ((1,1), (1,top), (right, 1), (right, top))
+        self.visitedCorners = (False, False, False, False)
+        for corner in self.corners:
+            if not startingGameState.hasFood(*corner):
+                print 'Warning: no food in corner ' + str(corner)
+        self._expanded = 0 # Number of search nodes expanded
+        # Please add any code here which you would like to use
+        # in initializing the problem
+
+    def getStartState(self):
+        "Returns the start state (in your state space, not the full Pacman state space)"
+        start = self.startingPosition
+        visited = self.visitedCorners
+        state = (start, visited)
+        return state
+
+    def isGoalState(self, state):
+        "Returns whether this search state is a goal state of the problem"
+        check = list(state[1])
+
+        for c in range(len(self.corners)):   # check all 4 corners
+            if state[0] == self.corners[c]:
+                check[c] = True
+        self.visitedCorners = tuple(check)
+        if all(self.visitedCorners):
+            return True
+        else:
+            return False
+
+    def getSuccessors(self, state):
+        successors = []
+        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+            # Add a successor state to the successor list if the action is legal
+            # Here's a code snippet for figuring out whether a new position hits a wall:
+            x, y = state[0]
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
+                successors.append((((nextx, nexty), self.visitedCorners), action, 1))
+
+        return successors
+
+    def getCostOfActions(self, actions):
+        """
+        Returns the cost of a particular sequence of actions.  If those actions
+        include an illegal move, return 999999.  This is implemented for you.
+        """
+        if actions == None: return 999999
+        x,y= self.startingPosition
+        for action in actions:
+            dx, dy = Actions.directionToVector(action)
+            x, y = int(x + dx), int(y + dy)
+            if self.walls[x][y]: return 999999
+        return len(actions)
+
+
+
+def start_corner_problem():
+    tiny_corner_layout = layout.getLayout('C:\Users\Bernhard\AppData\Local\Programs\Python\Python27\Lib\site-packages\pacman-0.1-py2.7.egg\pac\layouts\\tinyCorners')  # load the layout of the map
+    medium_corner_layout = layout.getLayout('C:\Users\Bernhard\AppData\Local\Programs\Python\Python27\Lib\site-packages\pacman-0.1-py2.7.egg\pac\layouts\mediumCorners')  # load the layout of the map
+    rules = pac.pacman.ClassicGameRules(0)
+    sa = SearchAgent(fn=breadthFirstSearch, prob=CornersProblem)
+    gameDisplay = graphicsDisplay.PacmanGraphics(frameTime = 0.1)  # visualization
+    game = rules.newGame(tiny_corner_layout, sa, [], gameDisplay, False, False)
+    game.run()
 
 
 
@@ -224,9 +303,9 @@ def start_game():
     mr_pacman = SearchAgent(fn=aStarSearch, prob=PositionSearchProblem)
     ghosts = [RandomGhost(1), RandomGhost(2)]  # controls the behavior of two ghosts
     gameDisplay = graphicsDisplay.PacmanGraphics(frameTime = 0.1) # initialize the display of the playing field
-    lay = layout.getLayout('C:\Users\Bernhard\AppData\Local\Programs\Python\Python27\Lib\site-packages\pacman-0.1-py2.7.egg\pac\layouts\\tinyMaze')  # load the layout of the map
+    lay = layout.getLayout('C:\Users\Bernhard\AppData\Local\Programs\Python\Python27\Lib\site-packages\pacman-0.1-py2.7.egg\pac\layouts\\tinyCorners')  # load the layout of the map
 
     game = rules.newGame(lay, mr_pacman, ghosts, gameDisplay, False, False)  # instantiate a Game instance, see below
     game.run()  # run the game, until Pacman is caught by a ghost or there is no food left
 
-start_game()
+start_corner_problem()
