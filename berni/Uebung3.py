@@ -415,6 +415,59 @@ def foodHeuristic(state, problem):
 
 
 
+
+
+
+
+class ClosestDotSearchAgent(SearchAgent):
+    "Search for all food using a sequence of searches"
+    def registerInitialState(self, state):
+        self.actions = []
+        currentState = state
+        while(currentState.getFood().count() > 0):
+            nextPathSegment = self.findPathToClosestDot(currentState) # The missing piece
+            self.actions += nextPathSegment
+            for action in nextPathSegment:
+                legal = currentState.getLegalActions()
+                if action not in legal:
+                    t = (str(action), str(currentState))
+                    raise Exception, 'findPathToClosestDot returned an illegal move: %s!\n%s' % t
+                currentState = currentState.generateSuccessor(0, action)
+        self.actionIndex = 0
+        print 'Path found with cost %d.' % len(self.actions)
+
+    def findPathToClosestDot(self, gameState):
+        "Returns a path (a list of actions) to the closest dot, starting from gameState"
+        # Here are some useful elements of the startState
+        problem = AnyFoodSearchProblem(gameState)
+        return breadthFirstSearch(problem)
+
+class AnyFoodSearchProblem(PositionSearchProblem):
+
+
+    def __init__(self, gameState):
+        "Stores information from the gameState.  You don't need to change this."
+        # Store the food for later reference
+        self.food = gameState.getFood()
+
+        # Store info for the PositionSearchProblem (no need to change this)
+        self.walls = gameState.getWalls()
+        self.startState = gameState.getPacmanPosition()
+        self.costFn = lambda x: 1
+        self._visited, self._visitedlist, self._expanded = {}, [], 0
+
+    def isGoalState(self, state):
+        """
+        The state is Pacman's position. Fill this in with a goal test
+        that will complete the problem definition.
+        """
+        if state in self.food.asList(): # pacman is on food position
+            return True
+        else:
+            return False
+
+
+
 def start_corner_problem_astar():
     tiny_corner_layout = layout.getLayout(
         'C:\Users\Bernhard\AppData\Local\Programs\Python\Python27\Lib\site-packages\pacman-0.1-py2.7.egg\pac\layouts\\tinyCorners')  # load the layout of the map
@@ -430,7 +483,6 @@ def start_corner_problem_astar():
     gameDisplay = graphicsDisplay.PacmanGraphics(frameTime=0.1)  # visualization
     game = rules.newGame(medium_corner_layout, sa, [], gameDisplay, False, False)
     game.run()
-
 
 def start_corner_problem():
     tiny_corner_layout = layout.getLayout(
@@ -464,5 +516,13 @@ def start_eating_dots():
                          sa, [], gameDisplay, False, False)
     game.run()
 
+def start_eating_closest_dot():
 
-start_eating_dots()
+    rules = pac.pacman.ClassicGameRules(0)
+    sa = ClosestDotSearchAgent()
+    gameDisplay = graphicsDisplay.PacmanGraphics(frameTime = 0.1)  # visualization
+    game = rules.newGame(layout.getLayout('C:\Users\Bernhard\AppData\Local\Programs\Python\Python27\Lib\site-packages\pacman-0.1-py2.7.egg\pac\layouts\\bigSearch'),
+                         sa, [], gameDisplay, False, False)
+    game.run()
+
+start_eating_closest_dot()
