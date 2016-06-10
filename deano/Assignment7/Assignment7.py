@@ -100,7 +100,7 @@ update_utils(utilities, map_shape, map_arr, rewards, final_arr, actions, gamma)
 
 
 plt.imshow(utilities, interpolation='nearest')
-#plt.show()
+plt.show()
 
 
 def min_num_iterations():
