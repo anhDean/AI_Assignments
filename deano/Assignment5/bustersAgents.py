@@ -170,8 +170,10 @@ class GreedyBustersAgent(BustersAgent):
 
         maxPos = [getMaxDictKey(k) for k in livingGhostPositionDistributions]
         distances = map(lambda x: self.distancer.getDistance(x, pacmanPosition), maxPos)
+        minDist = min(distances)
+        goalPos = maxPos[distances.index(minDist)]
         for action in legal:
-            if self.distancer.getDistance(Actions.getSuccessor(pacmanPosition, action), goalPos) < min(distances):
+            if self.distancer.getDistance(Actions.getSuccessor(pacmanPosition, action), goalPos) < minDist:
                 return action
         # should not end here!
         return legal[0]
