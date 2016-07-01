@@ -97,23 +97,7 @@ def min_num_iterations_():
         it += 1
     return it
 
-def min_num_iterations():
-    """
-    returns the minimum number of iterations of value iteration
-    so that the Euclidean distance between utility estimates is
-    smaller than 10**-4
-    """
-    err = 1e6
-    count = 0
-    ERROR_BOUND = 1e-4
-    while (err > ERROR_BOUND):
-        bkp_utils = utilities.copy()
-        update_utils(utilities, map_shape, map_arr, rewards, final_arr, actions, gamma)
-        # calc euclidean error norm
-        d = bkp_utils.flatten() - utilities.flatten()
-        err = np.sqrt(np.dot(d,d))
-        count += 1
-    return count
+
 
 print min_num_iterations()
 
